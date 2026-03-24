@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "ShooterSam.h"
+#include "Gun.h"
 
 AShooterSamCharacter::AShooterSamCharacter()
 {
@@ -65,6 +66,9 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Look);
+
+		// Shooting
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AShooterSamCharacter::Shoot);
 	}
 	else
 	{
@@ -130,4 +134,28 @@ void AShooterSamCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AShooterSamCharacter::Shoot()
+{
+	UE_LOG(LogTemp, Display, TEXT("Shooting!"));
+	if (Gun)
+	{
+		Gun->PullTrigger();
+	}
+}
+
+void AShooterSamCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GetMesh()->HideBoneByName("weapon_r", EPhysBodyOp::PBO_None);
+
+	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+	if (Gun)
+	{
+		Gun->SetOwner(this);
+		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("weaponSocket"));
+		Gun->OwnerController = GetController();
+	}
 }

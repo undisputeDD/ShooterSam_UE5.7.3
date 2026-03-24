@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 struct FInputActionValue;
+class AGun;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -48,6 +49,9 @@ protected:
 	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ShootAction;
 
 public:
 
@@ -92,5 +96,14 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	void Shoot();
+
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AGun> GunClass;
+
+	AGun* Gun;
 };
 
