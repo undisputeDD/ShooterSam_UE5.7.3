@@ -2,6 +2,7 @@
 
 
 #include "Gun.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AGun::AGun()
@@ -14,6 +15,9 @@ AGun::AGun()
 
 	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(SceneComponent);
+
+	MuzzleFlashParticleSystem = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MuzzleFlash"));
+	MuzzleFlashParticleSystem->SetupAttachment(Mesh);
 }
 
 // Called when the game starts or when spawned
@@ -21,6 +25,7 @@ void AGun::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	MuzzleFlashParticleSystem->Deactivate();
 }
 
 // Called every frame
@@ -32,6 +37,8 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::PullTrigger()
 {
+	MuzzleFlashParticleSystem->Activate(true);
+
 	UE_LOG(LogTemp, Display, TEXT("Bang"));
 	if (OwnerController)
 	{
@@ -46,7 +53,12 @@ void AGun::PullTrigger()
 		bool isHit = GetWorld()->LineTraceSingleByChannel(HitResult, Location, EndLocation, ECC_GameTraceChannel1, Params);
 		if (isHit)
 		{
-			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 5.0f, 16, FColor::Red, true);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticleSystem, HitResult.ImpactPoint, HitResult.ImpactPoint.Rotation());
+			AActor* HitActor = HitResult.GetActor();
+			if (HitActor)
+			{
+				UGameplayStatics::ApplyDamage(HitActor, BulletDamage, OwnerController, this, UDamageType::StaticClass());
+			}
 		}
 	}
 }
