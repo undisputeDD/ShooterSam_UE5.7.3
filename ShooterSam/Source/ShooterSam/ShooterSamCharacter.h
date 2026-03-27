@@ -116,5 +116,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool IsAlive = true;
+
+	void UpdateHUD();
 };
 
